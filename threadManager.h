@@ -25,6 +25,8 @@ class ThreadManager
 		ThreadManager(int RequestsPerPerson, int SizeOfBuffer, int NumberOfWorkers);
 		~ThreadManager();
 
+		void StartClient();
+
 	private:
 		//std::vector<RequestThread> v_requestThreads;
 		//std::vector<WorkerThread> v_workerThreads;

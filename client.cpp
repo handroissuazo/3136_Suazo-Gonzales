@@ -45,6 +45,7 @@ int main(int argc, char **argv)
     if (pid == 0)// child process
     {
 		ThreadManager threadManager(RequestsPerPerson, SizeOfBuffer, NumberOfWorkers);
+        threadManager.StartClient();
     }
     else if (pid > 0) // parent process
     {

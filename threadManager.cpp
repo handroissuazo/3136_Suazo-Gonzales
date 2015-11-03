@@ -28,3 +28,8 @@ ThreadManager::~ThreadManager()
 	string reply4 = this->m_controlChannel->send_request("quit");
 	cout << "Reply to request 'quit' is '" << reply4 << "'" << endl;
 }
+
+void ThreadManager::StartClient()
+{
+	printf("You have started the client!\n");
+}
