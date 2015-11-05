@@ -21,7 +21,7 @@
 /* INCLUDES */
 /*--------------------------------------------------------------------------*/
 
-#include <pthread.h>
+
 #include <mutex>
 #include <condition_variable>
 #include "BoundedBuffer.h"
@@ -65,7 +65,7 @@ public:
 
   /* -- SEMAPHORE OPERATIONS */
 
-  int P();
+  int P(int _content);
   int V();
 };
 
