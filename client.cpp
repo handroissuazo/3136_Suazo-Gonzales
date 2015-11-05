@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "threadManager.h"
+#include "semaphore.h"
 
 /*Global Options*/
 int RequestsPerPerson;
