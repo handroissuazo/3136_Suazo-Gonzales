@@ -42,8 +42,3 @@ int Semaphore::V(){
 
   return value;
 }
-
-int main() {
-  Semaphore* curr = new Semaphore(200000);
-  delete curr;
-}
