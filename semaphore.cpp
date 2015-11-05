@@ -36,7 +36,7 @@ int Semaphore::V(){
   }
 
   /* buffer has something in it and we own the mutex: get the item */
-  int value = bf_mp4->Dequeue();
+  value = bf_mp4->Dequeue();
 
   /* tell anyone waiting on a full buffer that they can wake up. */
   the_notfull_cvar.notify_all();
