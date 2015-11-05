@@ -10,7 +10,7 @@ Semaphore::~Semaphore(){
 
 /* -- SEMAPHORE OPERATIONS */
 
-int Semaphore::P(){
+int Semaphore::P(int _content){
   std::unique_lock<std::mutex> lock(the_mutex);
   while ( bf_mp4->isBufferFull() ){
     /* simultaneously wait and release the mutex */
@@ -19,7 +19,8 @@ int Semaphore::P(){
   }
 
   /* buffer has space and we own the mutex: insert the item */
-  /*...implementation here...*/
+  bf_mp4->Enqueue(_content);
+
   /* tell anyone waiting on an empty buffer that they can wake up. */
   the_notempty_cvar.notify_all();
 }
@@ -35,10 +36,21 @@ int Semaphore::V(){
   }
 
   /* buffer has something in it and we own the mutex: get the item */
-  /*...implement here...*/
+  int value = bf_mp4->Dequeue();
 
   /* tell anyone waiting on a full buffer that they can wake up. */
   the_notfull_cvar.notify_all();
 
   return value;
 }
+
+// int main()
+// {
+//   Semaphore* theTest = new Semaphore(30000);
+//
+//
+//   theTest->P(44);
+//   theTest->V();
+//
+//   delete theTest;
+// }
