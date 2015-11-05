@@ -107,14 +107,12 @@ inline int BoundedBuffer<Elem>::ElemNum(void)
 // isBufferFull() function
 template <typename Elem>
 bool BoundedBuffer<Elem>::isBufferFull(){
-  assert( ElemCount < MAX_NUM );
   return ElemCount >= MAX_NUM;
 }
 
 // isBufferEmpty() function
 template <typename Elem>
 bool BoundedBuffer<Elem>::isBufferEmpty(){
-  assert( ElemCount > 0 );
   return ElemCount <= 0;
 }
 

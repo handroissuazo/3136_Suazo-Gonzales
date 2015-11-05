@@ -21,7 +21,6 @@
 /* INCLUDES */
 /*--------------------------------------------------------------------------*/
 
-//#include <pthread.h>
 #include <mutex>
 #include <condition_variable>
 #include "BoundedBuffer.h"

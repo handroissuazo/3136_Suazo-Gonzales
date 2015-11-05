@@ -43,14 +43,3 @@ int Semaphore::V(){
 
   return value;
 }
-
-// int main()
-// {
-//   Semaphore* theTest = new Semaphore(30000);
-//
-//
-//   theTest->P(44);
-//   theTest->V();
-//
-//   delete theTest;
-// }
