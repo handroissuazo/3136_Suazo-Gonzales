@@ -12,8 +12,22 @@ class ThreadManager
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <thread>
+#include <ctime>
+#include <vector>
 #include "reqchannel.h"
 
+struct RequestPackage
+{
+	string personRequested;
+	int requestNumber;
+	string serverResponse;
+	clock_t requestEnqued;
+	clock_t requestDequed;
+	clock_t requestSent;
+	clock_t requestStored;
+
+};
 
 class ThreadManager
 {
@@ -21,8 +35,7 @@ class ThreadManager
 	public:
 		//The constructor innitializes the control RequestChannel and whatever
 		//other things that need to get done in the beginning
-		ThreadManager();
-		ThreadManager(int RequestsPerPerson, int SizeOfBuffer, int NumberOfWorkers);
+		ThreadManager(int req, int buf, int wok);
 		~ThreadManager();
 
 		void StartClient();
@@ -32,11 +45,24 @@ class ThreadManager
 		//std::vector<WorkerThread> v_workerThreads;
 		//std::vector<StatisticThread> v_staticticsThreads;
 		RequestChannel* m_controlChannel;
+		std::vector<RequestPackage> v_requestBuffer;
 		int m_requestsPerPerson;
 		int m_sizeOfBuffer;
 		int m_numberOfWorkers;
 
+		void enqueueRequestBuffer(string personRequested);
+		void dequeueRequestBuffer(RequestPackage rqstPackg);
 };
+
+// class RequestThread
+// {
+// public:
+// 	RequestThread();
+// 	~RequestThread();
+//
+// private:
+//
+// }
 
 
 #endif

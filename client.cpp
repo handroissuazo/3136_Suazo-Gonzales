@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <exception>
 #include "threadManager.h"
 #include "semaphore.h"
 
@@ -40,24 +41,45 @@ int main(int argc, char **argv)
 {
 
 	getOption(argc, argv);
-	// printf("Requests per person: %d\tSize of Buffers: %d\tNumber of Workers: %d\n", RequestsPerPerson, SizeOfBuffer, NumberOfWorkers );
     pid_t pid = fork();
+    try
+    {
+        int retVal = 0;
+        if (pid == 0)// child process
+        {
+    		// ThreadManager threadManager(RequestsPerPerson, SizeOfBuffer, NumberOfWorkers);
+            ThreadManager threadManager(10, 100, 1);
+            threadManager.StartClient();
+        }
+        else if (pid > 0) // parent process
+        {
+            retVal = execl("./dataserver","./dataserver", NULL);
 
-    if (pid == 0)// child process
-    {
-		ThreadManager threadManager(RequestsPerPerson, SizeOfBuffer, NumberOfWorkers);
-        threadManager.StartClient();
+            if(retVal == -1){
+                throw "DataServer Execution failed";
+            }
+        }
+        else
+        {
+            // fork failed
+            printf("fork() failed!\n");
+            return 1;
+        }
     }
-    else if (pid > 0) // parent process
+    //TODO figure out how to printf exceptions
+    // catch (exception& e)
+    // {
+    //     printf("%s\n",e.what().c_str());
+    // }
+    catch(char const* e)
     {
-		execl("./dataserver","./dataserver");
+        printf("%s\n", e);
     }
-    else
+    catch(...)
     {
-        // fork failed
-        printf("fork() failed!\n");
-        return 1;
+        printf("Catched an unknown error\n");
     }
+
 
 	return 0;
 }

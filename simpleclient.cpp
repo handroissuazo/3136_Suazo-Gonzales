@@ -74,7 +74,7 @@ int main(int argc, char * argv[]) {
   cout << "Reply to request 'data Jane Smith' is '" << reply3 << "'" << endl;
 
   string reply5 = chan.send_request("newthread");
-  cout << "Reply to request 'newthread' is '" << reply5 << "'" << endl;
+  cout << "Reply to request 'newthread' is " << reply5 << "'" << endl;
   RequestChannel chan2(reply5, RequestChannel::CLIENT_SIDE);
 
   string reply6 = chan2.send_request("data John Doe");
