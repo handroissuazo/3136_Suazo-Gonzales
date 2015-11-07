@@ -32,22 +32,13 @@ ThreadManager::~ThreadManager()
 void ThreadManager::StartClient()
 {
 	printf("Started Client\n");
-	enqueueRequestBuffer("Dimas Gonzales");
-
-	// std::thread requestThread1 (enqueueRequestBuffer, "Dimas Gonzales");
-	// std::thread requestThread2 (enqueueRequestBuffer, "Alejandro Suazo");
-	// std::thread requestThread3 (enqueueRequestBuffer, "John Jacob");
-
-
+	initRequestThreads();
 
 	// while(!v_requestBuffer.empty()){
 	// 	dequeueRequestBuffer(v_requestBuffer.back());
 	// 	v_requestBuffer.pop_back();
 	// }
 
-	// requestThread1.join();
-	// requestThread2.join();
-	// requestThread3.join();
 
 }
 
@@ -80,8 +71,18 @@ void ThreadManager::dequeueRequestBuffer(RequestPackage rqstPackg)
 }
 
 void ThreadManager::initRequestThreads(){
+	// enqueueRequestBuffer("Dimas Gonzales");
+	std::thread requestThread1 (&ThreadManager::enqueueRequestBuffer, this, "Dimas Gonzales");
+	std::thread requestThread2 (&ThreadManager::enqueueRequestBuffer,this, "Alejandro Suazo");
+	std::thread requestThread3 (&ThreadManager::enqueueRequestBuffer,this, "John Jacob");
+	requestThread1.join();
+	requestThread2.join();
+	requestThread3.join();
+
 
 }
+
+
 
 void ThreadManager::initWorkerThreads(){
 
