@@ -20,9 +20,13 @@ ThreadManager::ThreadManager(int RequestsPerPerson, int SizeOfBuffer, int Number
 
 ThreadManager::~ThreadManager()
 {
+	joinRequestThreads();
+	joinWorkerThreads();
+
 	string reply = m_controlChannel->send_request("quit");
 	cout << "Reply to request 'quit' is '" << reply << "'" << endl;
 
+	delete m_controlChannel;
 	delete v_requestBuffer;
 	delete v_responseBuffer1;
 	delete v_responseBuffer2;
@@ -32,16 +36,10 @@ ThreadManager::~ThreadManager()
 void ThreadManager::StartClient()
 {
 	printf("Started Client\n");
+
 	initRequestThreads();
 
 	initWorkerThreads();
-
-	// while(!v_requestBuffer.empty()){
-	// 	dequeueRequestBuffer(v_requestBuffer.back());
-	// 	v_requestBuffer.pop_back();
-	// }
-
-
 }
 
 void ThreadManager::enqueueRequestBuffer(string personRequested)
@@ -54,20 +52,17 @@ void ThreadManager::enqueueRequestBuffer(string personRequested)
 		rqstPckg.requestEnqued = clock();
 
 		v_requestBuffer->P(rqstPckg);
-		v_requestBuffer->V();
 	}
 }
 
-void ThreadManager::dequeueRequestBuffer()
+void ThreadManager::dequeueRequestBuffer(string strRequestChannel)
 {
-	string strServerThreadRequest = m_controlChannel->send_request("newthread");
-	cout << "Reply to request 'newthread' is " << strServerThreadRequest << "'" << endl;
-	RequestChannel chan2(strServerThreadRequest, RequestChannel::CLIENT_SIDE);
+	RequestChannel chan(strRequestChannel, RequestChannel::CLIENT_SIDE);
 
 	while(!v_requestBuffer->isDone()){
 		RequestPackage newPackage = v_requestBuffer->V();
 
-		string strReply = chan2.send_request("data " + newPackage.personRequested);
+		string strReply = chan.send_request("data " + newPackage.personRequested);
 		newPackage.serverResponse = strReply;
 
 		if (newPackage.personRequested == "Joe Smith"){
@@ -80,6 +75,9 @@ void ThreadManager::dequeueRequestBuffer()
 			v_responseBuffer3->P(newPackage);
 		}
 	}
+
+	string reply7 = chan.send_request("quit");
+	cout << "Reply to request 'quit' is '" << reply7 << "'" << endl;
 }
 
 void ThreadManager::initRequestThreads(){
@@ -90,15 +88,17 @@ void ThreadManager::initRequestThreads(){
 	requestThread1.join();
 	requestThread2.join();
 	requestThread3.join();
-
-
 }
 
 
 
 void ThreadManager::initWorkerThreads(){
 	for (int i = 0; i < m_numberOfWorkers; ++i){
-		v_workerThreads.push_back(std::thread(&ThreadManager::dequeueRequestBuffer, this));
+		string strServerThreadRequest = m_controlChannel->send_request("newthread");
+		cout << "Reply to request 'newthread' is " << strServerThreadRequest << "'" << endl;
+		
+		v_workerThreads.push_back(std::thread(&ThreadManager::dequeueRequestBuffer, this, strServerThreadRequest));
+		printf("----------------------------------- \nMade thread number: %i\n -------------------------------- \n", i);
 	}
 }
 
