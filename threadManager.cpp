@@ -80,24 +80,13 @@ void ThreadManager::dequeueRequestBuffer()
 			v_responseBuffer3->P(newPackage);
 		}
 	}
-
-	// string threadRequest = m_controlChannel->send_request("newthread");
-	// cout << "Reply to request 'newthread' is " << threadRequest << "'" << endl;
-	// RequestChannel chan2(threadRequest, RequestChannel::CLIENT_SIDE);
-	//
-	// string reply6 = chan2.send_request("data "+rqstPackg.personRequested);
-	// cout << "Reply to request 'data " + rqstPackg.personRequested + "' is '" << reply6 << "'" << endl;
-	//
-	// string reply7 = chan2.send_request("quit");
-	// cout << "Reply to request 'quit' is '" << reply7 << "'" << endl;
-
 }
 
 void ThreadManager::initRequestThreads(){
 	// enqueueRequestBuffer("Dimas Gonzales");
-	std::thread requestThread1 (&ThreadManager::enqueueRequestBuffer, this, "Dimas Gonzales");
-	std::thread requestThread2 (&ThreadManager::enqueueRequestBuffer,this, "Alejandro Suazo");
-	std::thread requestThread3 (&ThreadManager::enqueueRequestBuffer,this, "John Jacob");
+	std::thread requestThread1 (&ThreadManager::enqueueRequestBuffer, this, "Joe Smith");
+	std::thread requestThread2 (&ThreadManager::enqueueRequestBuffer, this, "Jane Smith");
+	std::thread requestThread3 (&ThreadManager::enqueueRequestBuffer, this, "John Doe");
 	requestThread1.join();
 	requestThread2.join();
 	requestThread3.join();
