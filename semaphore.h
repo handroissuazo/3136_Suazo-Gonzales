@@ -64,8 +64,8 @@ private:
   std::mutex the_mutex;
   std::condition_variable the_notfull_cvar;
   std::condition_variable the_notempty_cvar;
-	bool isDone;
-	
+	bool bIsDone;
+
 public:
 
   /* -- CONSTRUCTOR/DESTRUCTOR */
@@ -78,6 +78,9 @@ public:
 
   void P(RequestPackage _content);
   RequestPackage V();
+
+	bool isDone();
+	void setDone(bool areWeDone);
 };
 
 

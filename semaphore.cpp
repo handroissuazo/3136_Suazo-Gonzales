@@ -2,7 +2,7 @@
 
 Semaphore::Semaphore(int _sizeOfBuffer){
   bf_mp4 = new BoundedBuffer<RequestPackage>(_sizeOfBuffer);
-  isDone = false;
+  bIsDone = false;
 }
 
 Semaphore::~Semaphore(){
@@ -43,4 +43,12 @@ RequestPackage Semaphore::V(){
   the_notfull_cvar.notify_all();
 
   return value;
+}
+
+bool Semaphore::isDone(){
+  return bIsDone;
+}
+
+void Semaphore::setDone(bool areWeDone){
+  bIsDone = areWeDone;
 }

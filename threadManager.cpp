@@ -32,13 +32,8 @@ ThreadManager::~ThreadManager()
 void ThreadManager::StartClient()
 {
 	printf("Started Client\n");
-	enqueueRequestBuffer("Dimas Gonzales");
 
-	// std::thread requestThread1 (enqueueRequestBuffer, "Dimas Gonzales");
-	// std::thread requestThread2 (enqueueRequestBuffer, "Alejandro Suazo");
-	// std::thread requestThread3 (enqueueRequestBuffer, "John Jacob");
-
-
+	initWorkerThreads();
 
 	// while(!v_requestBuffer.empty()){
 	// 	dequeueRequestBuffer(v_requestBuffer.back());
@@ -65,17 +60,38 @@ void ThreadManager::enqueueRequestBuffer(string personRequested)
 	}
 }
 
-void ThreadManager::dequeueRequestBuffer(RequestPackage rqstPackg)
+void ThreadManager::dequeueRequestBuffer()
 {
-	string threadRequest = m_controlChannel->send_request("newthread");
-	cout << "Reply to request 'newthread' is " << threadRequest << "'" << endl;
-	RequestChannel chan2(threadRequest, RequestChannel::CLIENT_SIDE);
+	string strServerThreadRequest = m_controlChannel->send_request("newthread");
+	cout << "Reply to request 'newthread' is " << strServerThreadRequest << "'" << endl;
+	RequestChannel chan2(strServerThreadRequest, RequestChannel::CLIENT_SIDE);
 
-	string reply6 = chan2.send_request("data "+rqstPackg.personRequested);
-	cout << "Reply to request 'data " + rqstPackg.personRequested + "' is '" << reply6 << "'" << endl;
+	while(!v_requestBuffer->isDone()){
+		RequestPackage newPackage = v_requestBuffer->V();
 
-	string reply7 = chan2.send_request("quit");
-	cout << "Reply to request 'quit' is '" << reply7 << "'" << endl;
+		string strReply = chan2.send_request("data " + newPackage.personRequested);
+		newPackage.serverResponse = strReply;
+
+		if (newPackage.personRequested == "Joe Smith"){
+			v_responseBuffer1->P(newPackage);
+		}
+		else if (newPackage.personRequested == "Jane Smith"){
+			v_responseBuffer2->P(newPackage);
+		}
+		else if (newPackage.personRequested == "John Doe"){
+			v_responseBuffer3->P(newPackage);
+		}
+	}
+
+	// string threadRequest = m_controlChannel->send_request("newthread");
+	// cout << "Reply to request 'newthread' is " << threadRequest << "'" << endl;
+	// RequestChannel chan2(threadRequest, RequestChannel::CLIENT_SIDE);
+	//
+	// string reply6 = chan2.send_request("data "+rqstPackg.personRequested);
+	// cout << "Reply to request 'data " + rqstPackg.personRequested + "' is '" << reply6 << "'" << endl;
+	//
+	// string reply7 = chan2.send_request("quit");
+	// cout << "Reply to request 'quit' is '" << reply7 << "'" << endl;
 
 }
 
@@ -84,7 +100,9 @@ void ThreadManager::initRequestThreads(){
 }
 
 void ThreadManager::initWorkerThreads(){
-
+	for (int i = 0; i < m_numberOfWorkers; ++i){
+		v_workerThreads.push_back(std::thread(&ThreadManager::dequeueRequestBuffer, this));
+	}
 }
 
 void ThreadManager::initStatisticsThreads(){
@@ -97,7 +115,10 @@ void ThreadManager::joinRequestThreads(){
 }
 
 void ThreadManager::joinWorkerThreads(){
-
+	for (int i = 0; i < v_workerThreads.size(); ++i)
+	{
+		v_workerThreads[i].join();
+	}
 }
 
 void ThreadManager::joinStatisticsThreads(){
