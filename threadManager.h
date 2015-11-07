@@ -32,9 +32,7 @@ class ThreadManager
 		void StartClient();
 
 	private:
-		//std::vector<RequestThread> v_requestThreads;
 		std::vector<std::thread> v_workerThreads;
-		//std::vector<StatisticThread> v_staticticsThreads;
 		RequestChannel* m_controlChannel;
 
 		Semaphore* v_requestBuffer;
@@ -48,6 +46,7 @@ class ThreadManager
 
 		void enqueueRequestBuffer(string personRequested);
 		void dequeueRequestBuffer();
+		void dequeueResponseBuffer(int resBuf);
 
 		void initRequestThreads();
 		void initWorkerThreads();

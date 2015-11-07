@@ -54,7 +54,6 @@ void ThreadManager::enqueueRequestBuffer(string personRequested)
 		rqstPckg.requestEnqued = clock();
 
 		v_requestBuffer->P(rqstPckg);
-		v_requestBuffer->V();
 	}
 }
 
@@ -64,7 +63,8 @@ void ThreadManager::dequeueRequestBuffer()
 	cout << "Reply to request 'newthread' is " << strServerThreadRequest << "'" << endl;
 	RequestChannel chan2(strServerThreadRequest, RequestChannel::CLIENT_SIDE);
 
-	while(!v_requestBuffer->isDone()){
+	while(!v_requestBuffer->isDone())
+	{
 		RequestPackage newPackage = v_requestBuffer->V();
 
 		string strReply = chan2.send_request("data " + newPackage.personRequested);
@@ -82,7 +82,36 @@ void ThreadManager::dequeueRequestBuffer()
 	}
 }
 
-void ThreadManager::initRequestThreads(){
+void ThreadManager::dequeueResponseBuffer(int resBuf)
+{
+	switch (resBuf) {
+		case 1:
+			while(!this->v_responseBuffer1->isDone())
+			{
+				RequestPackage newPackage = this->v_responseBuffer1->V();
+				printf("The Stats Thread received a request for %s\n", newPackage.personRequested.c_str());
+			}
+		break;
+		case 2:
+			while(!this->v_responseBuffer2->isDone())
+			{
+				RequestPackage newPackage = this->v_responseBuffer2->V();
+				printf("The Stats Thread received a request for %s\n", newPackage.personRequested.c_str());
+			}
+		break;
+		case 3:
+			while(!this->v_responseBuffer3->isDone())
+			{
+				RequestPackage newPackage = this->v_responseBuffer3->V();
+				printf("The Stats Thread received a request for %s\n", newPackage.personRequested.c_str());
+			}
+		break;
+	}
+
+}
+
+void ThreadManager::initRequestThreads()
+{
 	// enqueueRequestBuffer("Dimas Gonzales");
 	std::thread requestThread1 (&ThreadManager::enqueueRequestBuffer, this, "Joe Smith");
 	std::thread requestThread2 (&ThreadManager::enqueueRequestBuffer, this, "Jane Smith");
@@ -90,20 +119,21 @@ void ThreadManager::initRequestThreads(){
 	requestThread1.join();
 	requestThread2.join();
 	requestThread3.join();
-
-
 }
 
-
-
-void ThreadManager::initWorkerThreads(){
-	for (int i = 0; i < m_numberOfWorkers; ++i){
+void ThreadManager::initWorkerThreads()
+{
+	for (int i = 0; i < m_numberOfWorkers; ++i)
+	{
 		v_workerThreads.push_back(std::thread(&ThreadManager::dequeueRequestBuffer, this));
 	}
 }
 
-void ThreadManager::initStatisticsThreads(){
-
+void ThreadManager::initStatisticsThreads()
+{
+	std::thread statThread1(&ThreadManager::dequeueResponseBuffer, this, 1);
+	std::thread statThread2(&ThreadManager::dequeueResponseBuffer, this, 2);
+	std::thread statThread3(&ThreadManager::dequeueResponseBuffer, this, 3);
 }
 
 
