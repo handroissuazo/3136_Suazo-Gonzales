@@ -18,7 +18,7 @@ simpleclient: simpleclient.cpp reqchannel.o
 	g++ -std=c++11 -g -o simpleclient simpleclient.cpp reqchannel.o
 
 client: client.cpp threadManager.o reqchannel.o
-	g++ -std=c++11 -w -g -o client client.cpp threadManager.o reqchannel.o semaphore.o -lpthread
+	g++ -std=c++11 -w -g -o client client.cpp threadManager.o reqchannel.o semaphore.o -pthread
 
 clean:
 	rm *o dataserver client simpleclient semaphore

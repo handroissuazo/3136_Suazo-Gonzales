@@ -15,6 +15,8 @@ class ThreadManager
 #include <thread>
 #include <ctime>
 #include <vector>
+#include <algorithm>
+#include <assert.h>
 #include "reqchannel.h"
 #include "semaphore.h"
 
@@ -31,7 +33,7 @@ class ThreadManager
 
 	private:
 		//std::vector<RequestThread> v_requestThreads;
-		//std::vector<WorkerThread> v_workerThreads;
+		std::vector<std::thread> v_workerThreads;
 		//std::vector<StatisticThread> v_staticticsThreads;
 		RequestChannel* m_controlChannel;
 
@@ -45,7 +47,7 @@ class ThreadManager
 		int m_numberOfWorkers;
 
 		void enqueueRequestBuffer(string personRequested);
-		void dequeueRequestBuffer(RequestPackage rqstPackg);
+		void dequeueRequestBuffer();
 
 		void initRequestThreads();
 		void initWorkerThreads();
