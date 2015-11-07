@@ -20,9 +20,6 @@ ThreadManager::ThreadManager(int RequestsPerPerson, int SizeOfBuffer, int Number
 
 ThreadManager::~ThreadManager()
 {
-	joinRequestThreads();
-	joinWorkerThreads();
-
 	string reply = m_controlChannel->send_request("quit");
 	cout << "Reply to request 'quit' is '" << reply << "'" << endl;
 
@@ -40,6 +37,10 @@ void ThreadManager::StartClient()
 	initRequestThreads();
 
 	initWorkerThreads();
+
+
+
+	clientRunner();
 }
 
 void ThreadManager::enqueueRequestBuffer(string personRequested)
@@ -55,13 +56,14 @@ void ThreadManager::enqueueRequestBuffer(string personRequested)
 	}
 }
 
-void ThreadManager::dequeueRequestBuffer(string strRequestChannel)
+void ThreadManager::dequeueRequestBufferEnqueueResponseBuffer(string strRequestChannel)
 {
 	RequestChannel chan(strRequestChannel, RequestChannel::CLIENT_SIDE);
 
 	while(!v_requestBuffer->isDone()){
 		RequestPackage newPackage = v_requestBuffer->V();
 
+		if (v_requestBuffer->isDone()) break;
 		string strReply = chan.send_request("data " + newPackage.personRequested);
 		newPackage.serverResponse = strReply;
 
@@ -96,14 +98,35 @@ void ThreadManager::initWorkerThreads(){
 	for (int i = 0; i < m_numberOfWorkers; ++i){
 		string strServerThreadRequest = m_controlChannel->send_request("newthread");
 		cout << "Reply to request 'newthread' is " << strServerThreadRequest << "'" << endl;
-		
-		v_workerThreads.push_back(std::thread(&ThreadManager::dequeueRequestBuffer, this, strServerThreadRequest));
-		printf("----------------------------------- \nMade thread number: %i\n -------------------------------- \n", i);
+
+		v_workerThreads.push_back(std::thread(&ThreadManager::dequeueRequestBufferEnqueueResponseBuffer, this, strServerThreadRequest));
+		printf(" -------------------------------- \n  Made thread number: %i\n -------------------------------- \n", i);
 	}
 }
 
 void ThreadManager::initStatisticsThreads(){
 
+}
+
+void ThreadManager::clientRunner(){
+	std::string strUserInput;
+	while (cin>>strUserInput){
+		if (strUserInput == "quit"){
+			break;
+		}
+	}
+
+	v_requestBuffer->setDone(true);
+	v_responseBuffer1->setDone(true);
+	v_responseBuffer2->setDone(true);
+	v_responseBuffer3->setDone(true);
+
+	joinRequestThreads();
+	printf("NOTICE: Request threads complete!\n");
+	joinWorkerThreads();
+	printf("NOTICE: Worker threads complete!\n");
+	joinStatisticsThreads();
+	printf("NOTICE: Statistics threads complete!\n");
 }
 
 
@@ -112,10 +135,12 @@ void ThreadManager::joinRequestThreads(){
 }
 
 void ThreadManager::joinWorkerThreads(){
-	for (int i = 0; i < v_workerThreads.size(); ++i)
-	{
-		v_workerThreads[i].join();
-	}
+	// for (int i = 0; i < v_workerThreads.size(); ++i)
+	// {
+	// 	v_workerThreads[i].join();
+	// }
+
+	for (auto& t: v_workerThreads) t.join();
 }
 
 void ThreadManager::joinStatisticsThreads(){

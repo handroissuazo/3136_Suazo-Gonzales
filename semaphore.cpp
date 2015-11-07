@@ -16,14 +16,16 @@ void Semaphore::P(RequestPackage _content){
   while ( bf_mp4->isBufferFull() ){
     /* simultaneously wait and release the mutex */
     the_notfull_cvar.wait(lock);
+
+    if (bIsDone) break;
     /* the mutex is reaquired at this point */
   }
-
+   if (bIsDone) return;
   /* buffer has space and we own the mutex: insert the item */
   bf_mp4->Enqueue(_content);
-  // printf("You queued something\n");
+
   /* tell anyone waiting on an empty buffer that they can wake up. */
-  the_notempty_cvar.notify_all();
+  the_notfull_cvar.notify_all();
 }
 
 RequestPackage Semaphore::V(){
@@ -33,9 +35,12 @@ RequestPackage Semaphore::V(){
   while ( bf_mp4->isBufferEmpty() ){
     /* simultaneously wait and release the mutex */
     the_notempty_cvar.wait(lock);
+
+    if (bIsDone) break;
     /* the mutex is reaquired at this point */
   }
-  // printf("You dequeued something\n");
+
+  if (bIsDone) return value;
   /* buffer has something in it and we own the mutex: get the item */
   value = bf_mp4->Dequeue();
 
@@ -51,4 +56,6 @@ bool Semaphore::isDone(){
 
 void Semaphore::setDone(bool areWeDone){
   bIsDone = areWeDone;
+  the_notempty_cvar.notify_all();
+  the_notfull_cvar.notify_all();
 }

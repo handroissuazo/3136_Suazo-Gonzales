@@ -48,11 +48,13 @@ class ThreadManager
 		int m_numberOfWorkers;
 
 		void enqueueRequestBuffer(string personRequested);
-		void dequeueRequestBuffer(string strRequestChannel);
+		void dequeueRequestBufferEnqueueResponseBuffer(string strRequestChannel);
 
 		void initRequestThreads();
 		void initWorkerThreads();
 		void initStatisticsThreads();
+
+		void clientRunner();
 
 		void joinRequestThreads();
 		void joinWorkerThreads();
