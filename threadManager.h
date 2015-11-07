@@ -34,6 +34,7 @@ class ThreadManager
 	private:
 		//std::vector<RequestThread> v_requestThreads;
 		std::vector<std::thread> v_workerThreads;
+		std::vector<RequestChannel> v_workerChannels;
 		//std::vector<StatisticThread> v_staticticsThreads;
 		RequestChannel* m_controlChannel;
 
@@ -47,7 +48,7 @@ class ThreadManager
 		int m_numberOfWorkers;
 
 		void enqueueRequestBuffer(string personRequested);
-		void dequeueRequestBuffer();
+		void dequeueRequestBuffer(string strRequestChannel);
 
 		void initRequestThreads();
 		void initWorkerThreads();
