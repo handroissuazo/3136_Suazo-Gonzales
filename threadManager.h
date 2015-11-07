@@ -16,18 +16,7 @@ class ThreadManager
 #include <ctime>
 #include <vector>
 #include "reqchannel.h"
-
-struct RequestPackage
-{
-	string personRequested;
-	int requestNumber;
-	string serverResponse;
-	clock_t requestEnqued;
-	clock_t requestDequed;
-	clock_t requestSent;
-	clock_t requestStored;
-
-};
+#include "semaphore.h"
 
 class ThreadManager
 {
@@ -45,13 +34,26 @@ class ThreadManager
 		//std::vector<WorkerThread> v_workerThreads;
 		//std::vector<StatisticThread> v_staticticsThreads;
 		RequestChannel* m_controlChannel;
-		std::vector<RequestPackage> v_requestBuffer;
+
+		Semaphore* v_requestBuffer;
+		Semaphore* v_responseBuffer1;
+		Semaphore* v_responseBuffer2;
+		Semaphore* v_responseBuffer3;
+
 		int m_requestsPerPerson;
 		int m_sizeOfBuffer;
 		int m_numberOfWorkers;
 
 		void enqueueRequestBuffer(string personRequested);
 		void dequeueRequestBuffer(RequestPackage rqstPackg);
+
+		void initRequestThreads();
+		void initWorkerThreads();
+		void initStatisticsThreads();
+
+		void joinRequestThreads();
+		void joinWorkerThreads();
+		void joinStatisticsThreads();
 };
 
 // class RequestThread

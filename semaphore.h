@@ -23,13 +23,24 @@
 
 #include <mutex>
 #include <condition_variable>
+#include <string>
+#include <ctime>
 #include "BoundedBuffer.h"
 
 /*--------------------------------------------------------------------------*/
 /* DATA STRUCTURES */
 /*--------------------------------------------------------------------------*/
 
-/* -- (none) -- */
+struct RequestPackage
+{
+	std::string personRequested;
+	int requestNumber;
+	std::string serverResponse;
+	clock_t requestEnqued;
+	clock_t requestDequed;
+	clock_t requestSent;
+	clock_t requestStored;
+};
 
 /*--------------------------------------------------------------------------*/
 /* FORWARDS */
@@ -49,11 +60,12 @@ private:
   // int             value;
   // pthread_mutex_t m;
   // pthread_cond_t  c;
-  BoundedBuffer<int>* bf_mp4;
+  BoundedBuffer<RequestPackage>* bf_mp4;
   std::mutex the_mutex;
   std::condition_variable the_notfull_cvar;
   std::condition_variable the_notempty_cvar;
-
+	bool isDone;
+	
 public:
 
   /* -- CONSTRUCTOR/DESTRUCTOR */
@@ -64,8 +76,8 @@ public:
 
   /* -- SEMAPHORE OPERATIONS */
 
-  int P(int _content);
-  int V();
+  void P(RequestPackage _content);
+  RequestPackage V();
 };
 
 

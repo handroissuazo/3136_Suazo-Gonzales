@@ -47,17 +47,17 @@ int main(int argc, char **argv)
         int retVal = 0;
         if (pid == 0)// child process
         {
-    		// ThreadManager threadManager(RequestsPerPerson, SizeOfBuffer, NumberOfWorkers);
-            ThreadManager threadManager(10, 100, 1);
-            threadManager.StartClient();
-        }
-        else if (pid > 0) // parent process
-        {
             retVal = execl("./dataserver","./dataserver", NULL);
 
             if(retVal == -1){
                 throw "DataServer Execution failed";
             }
+        }
+        else if (pid > 0) // parent process
+        {
+    		// ThreadManager threadManager(RequestsPerPerson, SizeOfBuffer, NumberOfWorkers);
+            ThreadManager threadManager(10, 100, 10);
+            threadManager.StartClient();
         }
         else
         {

@@ -1,7 +1,8 @@
 #include "semaphore.h"
 
 Semaphore::Semaphore(int _sizeOfBuffer){
-  bf_mp4 = new BoundedBuffer<int>(_sizeOfBuffer);
+  bf_mp4 = new BoundedBuffer<RequestPackage>(_sizeOfBuffer);
+  isDone = false;
 }
 
 Semaphore::~Semaphore(){
@@ -10,7 +11,7 @@ Semaphore::~Semaphore(){
 
 /* -- SEMAPHORE OPERATIONS */
 
-int Semaphore::P(int _content){
+void Semaphore::P(RequestPackage _content){
   std::unique_lock<std::mutex> lock(the_mutex);
   while ( bf_mp4->isBufferFull() ){
     /* simultaneously wait and release the mutex */
@@ -20,21 +21,21 @@ int Semaphore::P(int _content){
 
   /* buffer has space and we own the mutex: insert the item */
   bf_mp4->Enqueue(_content);
-
+  printf("You queued something\n");
   /* tell anyone waiting on an empty buffer that they can wake up. */
   the_notempty_cvar.notify_all();
 }
 
-int Semaphore::V(){
+RequestPackage Semaphore::V(){
   std::unique_lock<std::mutex> lock(the_mutex);
-  int value = 0;
+  RequestPackage value;
 
   while ( bf_mp4->isBufferEmpty() ){
     /* simultaneously wait and release the mutex */
     the_notempty_cvar.wait(lock);
     /* the mutex is reaquired at this point */
   }
-
+  printf("You dequeued something\n");
   /* buffer has something in it and we own the mutex: get the item */
   value = bf_mp4->Dequeue();
 

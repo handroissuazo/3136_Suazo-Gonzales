@@ -1,6 +1,5 @@
 #include "threadManager.h"
 
-
 ThreadManager::ThreadManager(int RequestsPerPerson, int SizeOfBuffer, int NumberOfWorkers)
 {
 
@@ -12,12 +11,22 @@ ThreadManager::ThreadManager(int RequestsPerPerson, int SizeOfBuffer, int Number
 	printf("Establishing control channel... ");
 	m_controlChannel = new RequestChannel("control", RequestChannel::CLIENT_SIDE);
     printf("done.\n");
+
+	v_requestBuffer = new Semaphore(m_sizeOfBuffer);
+	v_responseBuffer1 = new Semaphore(m_sizeOfBuffer);
+	v_responseBuffer2 = new Semaphore(m_sizeOfBuffer);
+	v_responseBuffer3 = new Semaphore(m_sizeOfBuffer);
 }
 
 ThreadManager::~ThreadManager()
 {
 	string reply = m_controlChannel->send_request("quit");
 	cout << "Reply to request 'quit' is '" << reply << "'" << endl;
+
+	delete v_requestBuffer;
+	delete v_responseBuffer1;
+	delete v_responseBuffer2;
+	delete v_responseBuffer3;
 }
 
 void ThreadManager::StartClient()
@@ -29,10 +38,12 @@ void ThreadManager::StartClient()
 	// std::thread requestThread2 (enqueueRequestBuffer, "Alejandro Suazo");
 	// std::thread requestThread3 (enqueueRequestBuffer, "John Jacob");
 
-	while(!v_requestBuffer.empty()){
-		dequeueRequestBuffer(v_requestBuffer.back());
-		v_requestBuffer.pop_back();
-	}
+
+
+	// while(!v_requestBuffer.empty()){
+	// 	dequeueRequestBuffer(v_requestBuffer.back());
+	// 	v_requestBuffer.pop_back();
+	// }
 
 	// requestThread1.join();
 	// requestThread2.join();
@@ -49,7 +60,8 @@ void ThreadManager::enqueueRequestBuffer(string personRequested)
 		rqstPckg.requestNumber = requestNum;
 		rqstPckg.requestEnqued = clock();
 
-		v_requestBuffer.push_back(rqstPckg);
+		v_requestBuffer->P(rqstPckg);
+		v_requestBuffer->V();
 	}
 }
 
@@ -64,5 +76,30 @@ void ThreadManager::dequeueRequestBuffer(RequestPackage rqstPackg)
 
 	string reply7 = chan2.send_request("quit");
 	cout << "Reply to request 'quit' is '" << reply7 << "'" << endl;
+
+}
+
+void ThreadManager::initRequestThreads(){
+
+}
+
+void ThreadManager::initWorkerThreads(){
+
+}
+
+void ThreadManager::initStatisticsThreads(){
+
+}
+
+
+void ThreadManager::joinRequestThreads(){
+
+}
+
+void ThreadManager::joinWorkerThreads(){
+
+}
+
+void ThreadManager::joinStatisticsThreads(){
 
 }
