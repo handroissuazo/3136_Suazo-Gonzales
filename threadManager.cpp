@@ -38,7 +38,7 @@ void ThreadManager::StartClient()
 
 	initWorkerThreads();
 
-
+	initStatisticsThreads();
 
 	clientRunner();
 }
@@ -69,17 +69,56 @@ void ThreadManager::dequeueRequestBufferEnqueueResponseBuffer(string strRequestC
 
 		if (newPackage.personRequested == "Joe Smith"){
 			v_responseBuffer1->P(newPackage);
+			printf("\n\ndata: %s entered to the buf 1:\n\n", strReply.c_str());
 		}
 		else if (newPackage.personRequested == "Jane Smith"){
 			v_responseBuffer2->P(newPackage);
+			printf("\n\ndata: %s entered to the buf 2:\n\n", strReply.c_str());
 		}
 		else if (newPackage.personRequested == "John Doe"){
 			v_responseBuffer3->P(newPackage);
+			printf("\n\ndata: %s entered to the buf 3:\n\n", strReply.c_str());
 		}
 	}
 
 	string reply7 = chan.send_request("quit");
 	cout << "Reply to request 'quit' is '" << reply7 << "'" << endl;
+}
+
+void ThreadManager::dequeueResponseBuffer1(){
+	while(!v_responseBuffer1->isDone()){
+		RequestPackage newPackage = v_responseBuffer1->V();
+
+		if (v_responseBuffer1->isDone()) break;
+		string strReply = newPackage.serverResponse;
+		printf("\n\n >>> The String buf 1: %s \n\n", strReply.c_str());
+	}
+
+	printf("quiting response buffer threads");
+}
+
+void ThreadManager::dequeueResponseBuffer2(){
+	while(!v_responseBuffer2->isDone()){
+		RequestPackage newPackage = v_responseBuffer2->V();
+
+		if (v_responseBuffer2->isDone()) break;
+		string strReply = newPackage.serverResponse;
+		printf("\n\n >>> The String buf 2: %s \n\n", strReply.c_str());
+	}
+
+	printf("quiting response buffer threads");
+}
+
+void ThreadManager::dequeueResponseBuffer3(){
+	while(!v_responseBuffer3->isDone()){
+		RequestPackage newPackage = v_responseBuffer3->V();
+
+		if (v_responseBuffer3->isDone()) break;
+		string strReply = newPackage.serverResponse;
+		printf("\n\n >>> The String buf 3: %s \n\n", strReply.c_str());
+	}
+
+	printf("quiting response buffer threads");
 }
 
 void ThreadManager::initRequestThreads(){
@@ -105,7 +144,12 @@ void ThreadManager::initWorkerThreads(){
 }
 
 void ThreadManager::initStatisticsThreads(){
-
+	std::thread statisticThread1 (&ThreadManager::dequeueResponseBuffer1, this);
+	std::thread statisticThread2 (&ThreadManager::dequeueResponseBuffer2, this);
+	std::thread statisticThread3 (&ThreadManager::dequeueResponseBuffer3, this);
+	statisticThread1.join();
+	statisticThread2.join();
+	statisticThread3.join();
 }
 
 void ThreadManager::clientRunner(){

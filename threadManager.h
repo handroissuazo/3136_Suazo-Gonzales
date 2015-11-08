@@ -49,6 +49,9 @@ class ThreadManager
 
 		void enqueueRequestBuffer(string personRequested);
 		void dequeueRequestBufferEnqueueResponseBuffer(string strRequestChannel);
+		void dequeueResponseBuffer1();
+		void dequeueResponseBuffer2();
+		void dequeueResponseBuffer3();
 
 		void initRequestThreads();
 		void initWorkerThreads();
