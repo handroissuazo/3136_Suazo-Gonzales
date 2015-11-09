@@ -189,7 +189,7 @@ void ThreadManager::processResults(std::vector<RequestPackage> requestPackages)
 	float averagetimeInRequestBuffer = 0.00;
 	float averagetimeForReply = 0.00;
 	float averagetimeInResponseBuffer = 0.00;
-	std::vector<int> v_responseDistribution(5,0);
+	std::vector<double> v_responseDistribution(5,0);
  	for(auto& pack: requestPackages){
 		averagetimeInRequestBuffer += (((float)(pack.requestDequed - pack.requestEnqued))/CLOCKS_PER_SEC);
 		averagetimeForReply += (((float)(pack.requestReplied - pack.requestDequed))/CLOCKS_PER_SEC);
@@ -197,19 +197,24 @@ void ThreadManager::processResults(std::vector<RequestPackage> requestPackages)
 
  		int serverResponse = std::stoi(pack.serverResponse);
 		if(serverResponse > 80) v_responseDistribution[0]++;
-		if(serverResponse > 60) v_responseDistribution[1]++;
-		if(serverResponse > 40) v_responseDistribution[2]++;
-		if(serverResponse > 20) v_responseDistribution[3]++;
-		if(serverResponse > 0) v_responseDistribution[4]++;
-
+		else if(serverResponse > 60) v_responseDistribution[1]++;
+		else if(serverResponse > 40) v_responseDistribution[2]++;
+		else if(serverResponse > 20) v_responseDistribution[3]++;
+		else if(serverResponse > 0) v_responseDistribution[4]++;
 	}
+
 	averagetimeInRequestBuffer = averagetimeInRequestBuffer/requestPackages.size();
 	averagetimeForReply = averagetimeForReply/requestPackages.size();
 	averagetimeInResponseBuffer = averagetimeInResponseBuffer/requestPackages.size();
 
+	// for(auto& resp: v_responseDistribution){
+	// 	resp = resp/requestPackages.size();
+	// }
+
 	printf("\n%s spent an average of:\n\t%f seconds in the Request Buffer\n\t%f seconds waiting for a Reply\n\t%f seconds in the Response Buffer\n",
 		personRequested.c_str(), averagetimeInRequestBuffer, averagetimeForReply, averagetimeInResponseBuffer);
-	printf("With the responses distributed as shown below...\n\tgreater than 80: %i\n\tgreater than 60: %i\n\tgreater than 40: %i\n\tgreater than 20: %i\n\tgreater than 00: %i"
+	printf("With %lu responses the replies were distributed as shown below...\n\tgreater than 80: %f\n\tgreater than 60: %f\n\tgreater than 40: %f\n\tgreater than 20: %f\n\tgreater than 00: %f"
+			,requestPackages.size()
 			,v_responseDistribution[0]
 			,v_responseDistribution[1]
 			,v_responseDistribution[2]
