@@ -55,14 +55,16 @@ void ThreadManager::enqueueRequestBuffer(string personRequested)
 
 void ThreadManager::dequeueRequestBufferEnqueueResponseBuffer(string strRequestChannel)
 {
-	RequestChannel chan(strRequestChannel, RequestChannel::CLIENT_SIDE);
+	RequestChannel dataChan(strRequestChannel, RequestChannel::CLIENT_SIDE);
 
 	while(!v_requestBuffer->isDone()){
 		RequestPackage newPackage = v_requestBuffer->V();
-
+		newPackage.requestDequed = clock();
 		if (v_requestBuffer->isDone()) break;
-		string strReply = chan.send_request("data " + newPackage.personRequested);
+		string strReply = dataChan.send_request("data " + newPackage.personRequested);
 		newPackage.serverResponse = strReply;
+		newPackage.requestReplied = clock();
+
 
 		if (newPackage.personRequested == "Joe Smith"){
 			v_responseBuffer1->P(newPackage);
@@ -75,46 +77,38 @@ void ThreadManager::dequeueRequestBufferEnqueueResponseBuffer(string strRequestC
 		}
 	}
 
-	string reply7 = chan.send_request("quit");
+	string reply7 = dataChan.send_request("quit");
 	cout << "Reply to request 'quit' is '" << reply7 << "'" << endl;
 }
 
 void ThreadManager::dequeueResponseBuffer1(){
-
-
 	while(!v_responseBuffer1->isDone()){
-		//printf("\n >>>> Size of buffer on dequeue 1 before dequeue: %d\n", v_responseBuffer1->returnNumberOfElems());
 		RequestPackage newPackage = v_responseBuffer1->V();
-		//printf("\n >>>> Size of buffer on dequeue 1 after dequeue: %d\n", v_responseBuffer1->returnNumberOfElems());
-
+		newPackage.requestProcessed = clock();
 		if (v_responseBuffer1->isDone()) break;
-		string strReply = newPackage.serverResponse;
-		v_requestBuffer1Results.push_back(std::stoi(newPackage.serverResponse));
+		v_requestBuffer1Results.push_back(newPackage);
 	}
 }
 
 void ThreadManager::dequeueResponseBuffer2(){
 	while(!v_responseBuffer2->isDone()){
 		RequestPackage newPackage = v_responseBuffer2->V();
-
+		newPackage.requestProcessed = clock();
 		if (v_responseBuffer2->isDone()) break;
-		string strReply = newPackage.serverResponse;
-		v_requestBuffer2Results.push_back(std::stoi(newPackage.serverResponse));
+		v_requestBuffer2Results.push_back(newPackage);
 	}
 }
 
 void ThreadManager::dequeueResponseBuffer3(){
 	while(!v_responseBuffer3->isDone()){
 		RequestPackage newPackage = v_responseBuffer3->V();
-
+		newPackage.requestProcessed = clock();
 		if (v_responseBuffer3->isDone()) break;
-		string strReply = newPackage.serverResponse;
-		v_requestBuffer3Results.push_back(std::stoi(newPackage.serverResponse));
+		v_requestBuffer3Results.push_back(newPackage);
 	}
 }
 
 void ThreadManager::initRequestThreads(){
-	// enqueueRequestBuffer("Dimas Gonzales");
 	std::thread requestThread1 (&ThreadManager::enqueueRequestBuffer, this, "Joe Smith");
 	std::thread requestThread2 (&ThreadManager::enqueueRequestBuffer, this, "Jane Smith");
 	std::thread requestThread3 (&ThreadManager::enqueueRequestBuffer, this, "John Doe");
@@ -165,7 +159,9 @@ void ThreadManager::clientRunner(){
 
 	usleep(100000); //Just for print formatting.
 
-	processResults();
+	processResults(v_requestBuffer1Results);
+	processResults(v_requestBuffer2Results);
+	processResults(v_requestBuffer3Results);
 
 	printf("\n ---------------------------------- \n Thanks for using our program!\n ---------------------------------- \n");
 }
@@ -187,11 +183,37 @@ void ThreadManager::joinStatisticsThreads(){
 	for (auto& t: v_staticticsThreads) t.join();
 }
 
-void ThreadManager::processResults()
+void ThreadManager::processResults(std::vector<RequestPackage> requestPackages)
 {
- 	cout<<v_requestBuffer1Results.size()<<endl;
-	cout<<v_requestBuffer2Results.size()<<endl;
-	cout<<v_requestBuffer3Results.size()<<endl;
+	std::string personRequested = requestPackages[0].personRequested;
+	float averagetimeInRequestBuffer = 0.00;
+	float averagetimeForReply = 0.00;
+	float averagetimeInResponseBuffer = 0.00;
+	std::vector<int> v_responseDistribution(5,0);
+ 	for(auto& pack: requestPackages){
+		averagetimeInRequestBuffer += (((float)(pack.requestDequed - pack.requestEnqued))/CLOCKS_PER_SEC);
+		averagetimeForReply += (((float)(pack.requestReplied - pack.requestDequed))/CLOCKS_PER_SEC);
+		averagetimeInResponseBuffer += (((float)(pack.requestProcessed - pack.requestDequed))/CLOCKS_PER_SEC);
 
-	//for (auto& t: v_staticticsThreads) cout<<t<<endl;
+ 		int serverResponse = std::stoi(pack.serverResponse);
+		if(serverResponse > 80) v_responseDistribution[0]++;
+		if(serverResponse > 60) v_responseDistribution[1]++;
+		if(serverResponse > 40) v_responseDistribution[2]++;
+		if(serverResponse > 20) v_responseDistribution[3]++;
+		if(serverResponse > 0) v_responseDistribution[4]++;
+
+	}
+	averagetimeInRequestBuffer = averagetimeInRequestBuffer/requestPackages.size();
+	averagetimeForReply = averagetimeForReply/requestPackages.size();
+	averagetimeInResponseBuffer = averagetimeInResponseBuffer/requestPackages.size();
+
+	printf("\n%s spent an average of:\n\t%f seconds in the Request Buffer\n\t%f seconds waiting for a Reply\n\t%f seconds in the Response Buffer\n",
+		personRequested.c_str(), averagetimeInRequestBuffer, averagetimeForReply, averagetimeInResponseBuffer);
+	printf("With the responses distributed as shown below...\n\tgreater than 80: %i\n\tgreater than 60: %i\n\tgreater than 40: %i\n\tgreater than 20: %i\n\tgreater than 00: %i"
+			,v_responseDistribution[0]
+			,v_responseDistribution[1]
+			,v_responseDistribution[2]
+			,v_responseDistribution[3]
+			,v_responseDistribution[4]);
+
 }

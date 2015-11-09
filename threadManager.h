@@ -34,9 +34,9 @@ class ThreadManager
 
 	private:
 		//std::vector<RequestThread> v_requestThreads;
-		std::vector<int> v_requestBuffer1Results;
-		std::vector<int> v_requestBuffer2Results;
-		std::vector<int> v_requestBuffer3Results;
+		std::vector<RequestPackage> v_requestBuffer1Results;
+		std::vector<RequestPackage> v_requestBuffer2Results;
+		std::vector<RequestPackage> v_requestBuffer3Results;
 
 		std::vector<std::thread> v_workerThreads;
 		std::vector<std::thread> v_staticticsThreads;
@@ -68,7 +68,7 @@ class ThreadManager
 		void joinWorkerThreads();
 		void joinStatisticsThreads();
 
-		void processResults();
+		void processResults(std::vector<RequestPackage> reqPacks);
 };
 
 // class RequestThread

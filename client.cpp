@@ -35,6 +35,11 @@ void getOption(int argc, char *argv[ ])
                   abort ();
           }
     }
+
+    if(RequestsPerPerson == 0) RequestsPerPerson = 100000;
+    if(SizeOfBuffer == 0) SizeOfBuffer = 100;
+    if(NumberOfWorkers == 0) NumberOfWorkers = 40;
+
 }
 
 int main(int argc, char **argv)
@@ -55,8 +60,8 @@ int main(int argc, char **argv)
         }
         else if (pid > 0) // parent process
         {
-    		// ThreadManager threadManager(RequestsPerPerson, SizeOfBuffer, NumberOfWorkers);
-            ThreadManager threadManager(100000, 100, 40);
+    		ThreadManager threadManager(RequestsPerPerson, SizeOfBuffer, NumberOfWorkers);
+            // ThreadManager threadManager(100000, 100, 40);
             threadManager.StartClient();
         }
         else

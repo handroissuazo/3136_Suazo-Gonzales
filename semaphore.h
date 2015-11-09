@@ -38,8 +38,8 @@ struct RequestPackage
 	std::string serverResponse;
 	clock_t requestEnqued;
 	clock_t requestDequed;
-	clock_t requestSent;
-	clock_t requestStored;
+	clock_t requestReplied;
+	clock_t requestProcessed;
 };
 
 /*--------------------------------------------------------------------------*/
