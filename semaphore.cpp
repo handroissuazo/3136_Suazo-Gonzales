@@ -25,7 +25,7 @@ void Semaphore::P(RequestPackage _content){
   bf_mp4->Enqueue(_content);
 
   /* tell anyone waiting on an empty buffer that they can wake up. */
-  the_notfull_cvar.notify_all();
+  the_notempty_cvar.notify_all();
 }
 
 RequestPackage Semaphore::V(){
@@ -58,4 +58,8 @@ void Semaphore::setDone(bool areWeDone){
   bIsDone = areWeDone;
   the_notempty_cvar.notify_all();
   the_notfull_cvar.notify_all();
+}
+
+int Semaphore::returnNumberOfElems(){
+  return bf_mp4->ElemCount;
 }
