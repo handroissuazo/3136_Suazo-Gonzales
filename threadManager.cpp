@@ -10,7 +10,7 @@ ThreadManager::ThreadManager(int RequestsPerPerson, int SizeOfBuffer, int Number
 
 	printf("Establishing control channel... ");
 	m_controlChannel = new RequestChannel("control", RequestChannel::CLIENT_SIDE);
-    printf("done.\n");
+  printf("done.\n");
 
 	v_requestBuffer = new Semaphore(m_sizeOfBuffer);
 	v_responseBuffer1 = new Semaphore(m_sizeOfBuffer);
@@ -20,9 +20,6 @@ ThreadManager::ThreadManager(int RequestsPerPerson, int SizeOfBuffer, int Number
 
 ThreadManager::~ThreadManager()
 {
-	string reply = m_controlChannel->send_request("quit");
-	cout << "Reply to request 'quit' is '" << reply << "'" << endl;
-
 	delete m_controlChannel;
 	delete v_requestBuffer;
 	delete v_responseBuffer1;
@@ -34,11 +31,11 @@ void ThreadManager::StartClient()
 {
 	printf("Started Client\n");
 
-	initRequestThreads();
-
 	initWorkerThreads();
 
 	initStatisticsThreads();
+
+	initRequestThreads();
 
 	clientRunner();
 }
@@ -69,15 +66,12 @@ void ThreadManager::dequeueRequestBufferEnqueueResponseBuffer(string strRequestC
 
 		if (newPackage.personRequested == "Joe Smith"){
 			v_responseBuffer1->P(newPackage);
-			printf("\n\ndata: %s entered to the buf 1:\n\n", strReply.c_str());
 		}
 		else if (newPackage.personRequested == "Jane Smith"){
 			v_responseBuffer2->P(newPackage);
-			printf("\n\ndata: %s entered to the buf 2:\n\n", strReply.c_str());
 		}
 		else if (newPackage.personRequested == "John Doe"){
 			v_responseBuffer3->P(newPackage);
-			printf("\n\ndata: %s entered to the buf 3:\n\n", strReply.c_str());
 		}
 	}
 
@@ -86,15 +80,17 @@ void ThreadManager::dequeueRequestBufferEnqueueResponseBuffer(string strRequestC
 }
 
 void ThreadManager::dequeueResponseBuffer1(){
+
+
 	while(!v_responseBuffer1->isDone()){
+		//printf("\n >>>> Size of buffer on dequeue 1 before dequeue: %d\n", v_responseBuffer1->returnNumberOfElems());
 		RequestPackage newPackage = v_responseBuffer1->V();
+		//printf("\n >>>> Size of buffer on dequeue 1 after dequeue: %d\n", v_responseBuffer1->returnNumberOfElems());
 
 		if (v_responseBuffer1->isDone()) break;
 		string strReply = newPackage.serverResponse;
-		printf("\n\n >>> The String buf 1: %s \n\n", strReply.c_str());
+		v_requestBuffer1Results.push_back(std::stoi(newPackage.serverResponse));
 	}
-
-	printf("quiting response buffer threads");
 }
 
 void ThreadManager::dequeueResponseBuffer2(){
@@ -103,10 +99,8 @@ void ThreadManager::dequeueResponseBuffer2(){
 
 		if (v_responseBuffer2->isDone()) break;
 		string strReply = newPackage.serverResponse;
-		printf("\n\n >>> The String buf 2: %s \n\n", strReply.c_str());
+		v_requestBuffer2Results.push_back(std::stoi(newPackage.serverResponse));
 	}
-
-	printf("quiting response buffer threads");
 }
 
 void ThreadManager::dequeueResponseBuffer3(){
@@ -115,10 +109,8 @@ void ThreadManager::dequeueResponseBuffer3(){
 
 		if (v_responseBuffer3->isDone()) break;
 		string strReply = newPackage.serverResponse;
-		printf("\n\n >>> The String buf 3: %s \n\n", strReply.c_str());
+		v_requestBuffer3Results.push_back(std::stoi(newPackage.serverResponse));
 	}
-
-	printf("quiting response buffer threads");
 }
 
 void ThreadManager::initRequestThreads(){
@@ -139,17 +131,13 @@ void ThreadManager::initWorkerThreads(){
 		cout << "Reply to request 'newthread' is " << strServerThreadRequest << "'" << endl;
 
 		v_workerThreads.push_back(std::thread(&ThreadManager::dequeueRequestBufferEnqueueResponseBuffer, this, strServerThreadRequest));
-		printf(" -------------------------------- \n  Made thread number: %i\n -------------------------------- \n", i);
 	}
 }
 
 void ThreadManager::initStatisticsThreads(){
-	std::thread statisticThread1 (&ThreadManager::dequeueResponseBuffer1, this);
-	std::thread statisticThread2 (&ThreadManager::dequeueResponseBuffer2, this);
-	std::thread statisticThread3 (&ThreadManager::dequeueResponseBuffer3, this);
-	statisticThread1.join();
-	statisticThread2.join();
-	statisticThread3.join();
+	v_staticticsThreads.push_back(std::thread (&ThreadManager::dequeueResponseBuffer1, this));
+	v_staticticsThreads.push_back(std::thread (&ThreadManager::dequeueResponseBuffer2, this));
+	v_staticticsThreads.push_back(std::thread (&ThreadManager::dequeueResponseBuffer3, this));
 }
 
 void ThreadManager::clientRunner(){
@@ -171,6 +159,15 @@ void ThreadManager::clientRunner(){
 	printf("NOTICE: Worker threads complete!\n");
 	joinStatisticsThreads();
 	printf("NOTICE: Statistics threads complete!\n");
+
+	string reply = m_controlChannel->send_request("quit");
+	cout << "Reply to request 'quit' is '" << reply << "'" << endl;
+
+	usleep(100000); //Just for print formatting.
+
+	processResults();
+
+	printf("\n ---------------------------------- \n Thanks for using our program!\n ---------------------------------- \n");
 }
 
 
@@ -183,10 +180,18 @@ void ThreadManager::joinWorkerThreads(){
 	// {
 	// 	v_workerThreads[i].join();
 	// }
-
 	for (auto& t: v_workerThreads) t.join();
 }
 
 void ThreadManager::joinStatisticsThreads(){
+	for (auto& t: v_staticticsThreads) t.join();
+}
 
+void ThreadManager::processResults()
+{
+ 	cout<<v_requestBuffer1Results.size()<<endl;
+	cout<<v_requestBuffer2Results.size()<<endl;
+	cout<<v_requestBuffer3Results.size()<<endl;
+
+	//for (auto& t: v_staticticsThreads) cout<<t<<endl;
 }

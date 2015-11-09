@@ -20,6 +20,7 @@ class BoundedBuffer
     inline int ElemNum(void);                // Returns Number of Elements
     bool isBufferFull();
     bool isBufferEmpty();
+    int       ElemCount;
 
   protected:
     Elem     *Data;      // The actual Data array
@@ -29,7 +30,6 @@ class BoundedBuffer
 
     // Instead of calculating the number of elements, using this variable
     // is much more convenient.
-    int       ElemCount;
 };
 
 // BoundedBuffer Constructor function

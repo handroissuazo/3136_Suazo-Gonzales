@@ -17,6 +17,7 @@ class ThreadManager
 #include <vector>
 #include <algorithm>
 #include <assert.h>
+#include <unistd.h>
 #include "reqchannel.h"
 #include "semaphore.h"
 
@@ -33,9 +34,13 @@ class ThreadManager
 
 	private:
 		//std::vector<RequestThread> v_requestThreads;
+		std::vector<int> v_requestBuffer1Results;
+		std::vector<int> v_requestBuffer2Results;
+		std::vector<int> v_requestBuffer3Results;
+
 		std::vector<std::thread> v_workerThreads;
+		std::vector<std::thread> v_staticticsThreads;
 		std::vector<RequestChannel> v_workerChannels;
-		//std::vector<StatisticThread> v_staticticsThreads;
 		RequestChannel* m_controlChannel;
 
 		Semaphore* v_requestBuffer;
@@ -62,6 +67,8 @@ class ThreadManager
 		void joinRequestThreads();
 		void joinWorkerThreads();
 		void joinStatisticsThreads();
+
+		void processResults();
 };
 
 // class RequestThread

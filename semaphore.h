@@ -81,6 +81,7 @@ public:
 
 	bool isDone();
 	void setDone(bool areWeDone);
+	int returnNumberOfElems();
 };
 
 
