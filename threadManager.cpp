@@ -160,8 +160,14 @@ void ThreadManager::initStatisticsThreads(){
 }
 
 void ThreadManager::checkClose(){
+	int i = 0;
 	while (finish1 == false || finish2 == false || finish3 == false){
-		cout<<"Loading...\n";
+		if(i%1000000==0){
+			printf("Loading...\n");
+			i = 0;
+		}
+		i++;
+
 	}
 
 	clientCloser();
@@ -196,7 +202,7 @@ void ThreadManager::clientCloser(){
 	processResults(v_requestBuffer2Results);
 	processResults(v_requestBuffer3Results);
 
-	// printf("\n ---------------------------------- \n Thanks for using our program!\n ---------------------------------- \n");
+	printf("\n ---------------------------------- \n Thanks for using our program!\n ---------------------------------- \n");
 }
 
 

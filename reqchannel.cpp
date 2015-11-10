@@ -139,11 +139,11 @@ RequestChannel::RequestChannel(const string _name, const Side _side) : my_name(_
 }
 
 RequestChannel::~RequestChannel() {
-  cout << "close requests channel " << my_name << endl;
+  // cout << "close requests channel " << my_name << endl;
   close(wfd);
   close(rfd);
   if (my_side == SERVER_SIDE) {
-    cout << "close IPC mechanisms on server side for channel " << my_name << endl;
+    // cout << "close IPC mechanisms on server side for channel " << my_name << endl;
     /* Destruct the underlying IPC mechanisms. */
     if (remove(pipe_name(READ_MODE)) != 0) {
       perror(string("Request Channel (" + my_name + ") : Error deleting pipe for reading").c_str());
