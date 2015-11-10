@@ -107,7 +107,7 @@ void process_newthread(RequestChannel & _channel, const string & _request) {
   // -- Name new data channel
 
   string new_channel_name = "data" + int2string(nthreads) + "_";
-  //  cout << "new channel name = " << new_channel_name << endl;
+   // cout << "new channel name = " << new_channel_name << endl;
 
   // -- Pass new channel name back to client
 
@@ -120,7 +120,7 @@ void process_newthread(RequestChannel & _channel, const string & _request) {
   // -- Create new thread to handle request channel
 
   pthread_t thread_id;
-  //  cout << "starting new thread " << nthreads << endl;
+   // cout << "starting new thread " << nthreads << endl;
   if (error = pthread_create(& thread_id, NULL, handle_data_requests, data_channel)) {
     fprintf(stderr, "p_create failed: %s\n", strerror(error));
   }
@@ -152,10 +152,10 @@ void handle_process_loop(RequestChannel & _channel) {
 
   for(;;) {
 
-    cout << "Reading next request from channel (" << _channel.name() << ") ..." << flush;
+    // cout << "Reading next request from channel (" << _channel.name() << ") ..." << flush;
     string request = _channel.cread();
-    cout << " done (" << _channel.name() << ")." << endl;
-    cout << "New request is " << request << endl;
+    // cout << " done (" << _channel.name() << ")." << endl;
+    // cout << "New request is " << request << endl;
 
     if (request.compare("quit") == 0) {
       _channel.cwrite("bye");
@@ -174,9 +174,9 @@ void handle_process_loop(RequestChannel & _channel) {
 
 int main(int argc, char * argv[]) {
 
-  //  cout << "Establishing control channel... " << flush;
+   // cout << "Establishing control channel... " << flush;
   RequestChannel control_channel("control", RequestChannel::SERVER_SIDE);
-  //  cout << "done.\n" << flush;
+   // cout << "done.\n" << flush;
 
   handle_process_loop(control_channel);
 

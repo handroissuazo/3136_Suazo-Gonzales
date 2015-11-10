@@ -6,11 +6,11 @@ ThreadManager::ThreadManager(int RequestsPerPerson, int SizeOfBuffer, int Number
 	m_requestsPerPerson = RequestsPerPerson;
 	m_sizeOfBuffer = SizeOfBuffer;
 	m_numberOfWorkers = NumberOfWorkers;
-	printf("This application supports:\n\tRequests Per Person: %d\n\tBuffer Size: %d\n\tTotal Worker Threads: %d\n",m_requestsPerPerson, m_sizeOfBuffer, m_numberOfWorkers);
+	// printf("This application supports:\n\tRequests Per Person: %d\n\tBuffer Size: %d\n\tTotal Worker Threads: %d\n",m_requestsPerPerson, m_sizeOfBuffer, m_numberOfWorkers);
 
-	printf("Establishing control channel... ");
+	// printf("Establishing control channel... ");
 	m_controlChannel = new RequestChannel("control", RequestChannel::CLIENT_SIDE);
-  printf("done.\n");
+  // printf("done.\n");
 
 	v_requestBuffer = new Semaphore(m_sizeOfBuffer);
 	v_responseBuffer1 = new Semaphore(m_sizeOfBuffer);
@@ -78,7 +78,7 @@ void ThreadManager::dequeueRequestBufferEnqueueResponseBuffer(string strRequestC
 	}
 
 	string reply7 = dataChan.send_request("quit");
-	cout << "Reply to request 'quit' is '" << reply7 << "'" << endl;
+	// cout << "Reply to request 'quit' is '" << reply7 << "'" << endl;
 }
 
 void ThreadManager::dequeueResponseBuffer1(){
@@ -122,7 +122,7 @@ void ThreadManager::initRequestThreads(){
 void ThreadManager::initWorkerThreads(){
 	for (int i = 0; i < m_numberOfWorkers; ++i){
 		string strServerThreadRequest = m_controlChannel->send_request("newthread");
-		cout << "Reply to request 'newthread' is " << strServerThreadRequest << "'" << endl;
+		// cout << "Reply to request 'newthread' is " << strServerThreadRequest << "'" << endl;
 
 		v_workerThreads.push_back(std::thread(&ThreadManager::dequeueRequestBufferEnqueueResponseBuffer, this, strServerThreadRequest));
 	}
@@ -148,14 +148,14 @@ void ThreadManager::clientRunner(){
 	v_responseBuffer3->setDone(true);
 
 	joinRequestThreads();
-	printf("NOTICE: Request threads complete!\n");
+	// printf("NOTICE: Request threads complete!\n");
 	joinWorkerThreads();
-	printf("NOTICE: Worker threads complete!\n");
+	// printf("NOTICE: Worker threads complete!\n");
 	joinStatisticsThreads();
-	printf("NOTICE: Statistics threads complete!\n");
+	// printf("NOTICE: Statistics threads complete!\n");
 
 	string reply = m_controlChannel->send_request("quit");
-	cout << "Reply to request 'quit' is '" << reply << "'" << endl;
+	// cout << "Reply to request 'quit' is '" << reply << "'" << endl;
 
 	usleep(100000); //Just for print formatting.
 
@@ -163,7 +163,7 @@ void ThreadManager::clientRunner(){
 	processResults(v_requestBuffer2Results);
 	processResults(v_requestBuffer3Results);
 
-	printf("\n ---------------------------------- \n Thanks for using our program!\n ---------------------------------- \n");
+	// printf("\n ---------------------------------- \n Thanks for using our program!\n ---------------------------------- \n");
 }
 
 
@@ -207,18 +207,24 @@ void ThreadManager::processResults(std::vector<RequestPackage> requestPackages)
 	averagetimeForReply = averagetimeForReply/requestPackages.size();
 	averagetimeInResponseBuffer = averagetimeInResponseBuffer/requestPackages.size();
 
-	// for(auto& resp: v_responseDistribution){
-	// 	resp = resp/requestPackages.size();
-	// }
+	for(auto& resp: v_responseDistribution){
+		resp = (resp/requestPackages.size())*100;
+	}
 
 	printf("\n%s spent an average of:\n\t%f seconds in the Request Buffer\n\t%f seconds waiting for a Reply\n\t%f seconds in the Response Buffer\n",
 		personRequested.c_str(), averagetimeInRequestBuffer, averagetimeForReply, averagetimeInResponseBuffer);
-	printf("With %lu responses the replies were distributed as shown below...\n\tgreater than 80: %f\n\tgreater than 60: %f\n\tgreater than 40: %f\n\tgreater than 20: %f\n\tgreater than 00: %f"
-			,requestPackages.size()
-			,v_responseDistribution[0]
-			,v_responseDistribution[1]
-			,v_responseDistribution[2]
-			,v_responseDistribution[3]
-			,v_responseDistribution[4]);
+
+	printf("With %lu responses the replies were distributed as shown below...(one * means about %lu responses)", requestPackages.size(), requestPackages.size()/100 );
+	int scale = 0;
+	for(auto& count: v_responseDistribution){
+		int range = scale*20;
+		if(range==0) printf("\nValues greater than 00:");
+		else printf("\nValues greater than %i:", range);
+		for(int i = 0; i < count; i++){
+			printf("*");
+		}
+		scale++;
+	}
+	printf("\n");
 
 }
