@@ -62,13 +62,18 @@ class ThreadManager
 		void initWorkerThreads();
 		void initStatisticsThreads();
 
-		void clientRunner();
+		void checkClose();
+		void clientCloser();
 
 		void joinRequestThreads();
 		void joinWorkerThreads();
 		void joinStatisticsThreads();
 
 		void processResults(std::vector<RequestPackage> reqPacks);
+
+		bool finish1;
+		bool finish2;
+		bool finish3;
 };
 
 // class RequestThread

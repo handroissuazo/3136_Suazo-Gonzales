@@ -6,6 +6,10 @@ ThreadManager::ThreadManager(int RequestsPerPerson, int SizeOfBuffer, int Number
 	m_requestsPerPerson = RequestsPerPerson;
 	m_sizeOfBuffer = SizeOfBuffer;
 	m_numberOfWorkers = NumberOfWorkers;
+
+	finish1 = false;
+	finish2 = false;
+	finish3 = false;
 	// printf("This application supports:\n\tRequests Per Person: %d\n\tBuffer Size: %d\n\tTotal Worker Threads: %d\n",m_requestsPerPerson, m_sizeOfBuffer, m_numberOfWorkers);
 
 	// printf("Establishing control channel... ");
@@ -29,7 +33,7 @@ ThreadManager::~ThreadManager()
 
 void ThreadManager::StartClient()
 {
-	printf("Started Client\n");
+	printf("Started Client\n ");
 
 	initWorkerThreads();
 
@@ -37,7 +41,8 @@ void ThreadManager::StartClient()
 
 	initRequestThreads();
 
-	clientRunner();
+	checkClose();
+	//clientCloser();
 }
 
 void ThreadManager::enqueueRequestBuffer(string personRequested)
@@ -87,6 +92,12 @@ void ThreadManager::dequeueResponseBuffer1(){
 		newPackage.requestProcessed = clock();
 		if (v_responseBuffer1->isDone()) break;
 		v_requestBuffer1Results.push_back(newPackage);
+
+		if (v_requestBuffer1Results.size() == m_requestsPerPerson)
+		{
+			finish1 = true;
+			break;
+		}
 	}
 }
 
@@ -96,7 +107,15 @@ void ThreadManager::dequeueResponseBuffer2(){
 		newPackage.requestProcessed = clock();
 		if (v_responseBuffer2->isDone()) break;
 		v_requestBuffer2Results.push_back(newPackage);
+
+		if (v_requestBuffer2Results.size() == m_requestsPerPerson)
+		{
+			finish2 = true;
+			break;
+		}
 	}
+
+
 }
 
 void ThreadManager::dequeueResponseBuffer3(){
@@ -105,6 +124,12 @@ void ThreadManager::dequeueResponseBuffer3(){
 		newPackage.requestProcessed = clock();
 		if (v_responseBuffer3->isDone()) break;
 		v_requestBuffer3Results.push_back(newPackage);
+
+		if (v_requestBuffer3Results.size() == m_requestsPerPerson)
+		{
+			finish3 = true;
+			break;
+		}
 	}
 }
 
@@ -134,13 +159,21 @@ void ThreadManager::initStatisticsThreads(){
 	v_staticticsThreads.push_back(std::thread (&ThreadManager::dequeueResponseBuffer3, this));
 }
 
-void ThreadManager::clientRunner(){
-	std::string strUserInput;
-	while (cin>>strUserInput){
-		if (strUserInput == "quit"){
-			break;
-		}
+void ThreadManager::checkClose(){
+	while (finish1 == false || finish2 == false || finish3 == false){
+		cout<<"Loading...\n";
 	}
+
+	clientCloser();
+}
+
+void ThreadManager::clientCloser(){
+	std::string strUserInput;
+	// while (cin>>strUserInput){
+	// 	if (strUserInput == "quit"){
+	// 		break;
+	// 	}
+	// }
 
 	v_requestBuffer->setDone(true);
 	v_responseBuffer1->setDone(true);
@@ -172,10 +205,6 @@ void ThreadManager::joinRequestThreads(){
 }
 
 void ThreadManager::joinWorkerThreads(){
-	// for (int i = 0; i < v_workerThreads.size(); ++i)
-	// {
-	// 	v_workerThreads[i].join();
-	// }
 	for (auto& t: v_workerThreads) t.join();
 }
 
