@@ -105,7 +105,7 @@ void process_data(NetworkRequestChannel & _channel, const string &  _request) {
 void process_newthread(NetworkRequestChannel & _channel, const string & _request) {
     int error;
 
-    if (currentUsedPorts <= backlogSize) {
+    if (currentUsedPorts < backlogSize) {
         // -- Construct new data channel (pointer to be passed to thread function)
 
         NetworkRequestChannel *data_channel = new NetworkRequestChannel(0, NULL);
