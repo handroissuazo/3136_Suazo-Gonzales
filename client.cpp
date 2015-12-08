@@ -36,7 +36,7 @@ void getOption(int argc, char *argv[ ])
           }
     }
 
-    if(RequestsPerPerson == 0) RequestsPerPerson = 100000;
+    if(RequestsPerPerson == 0) RequestsPerPerson = 10;
     if(SizeOfBuffer == 0) SizeOfBuffer = 100;
     if(NumberOfWorkers == 0) NumberOfWorkers = 40;
 
@@ -52,17 +52,13 @@ int main(int argc, char **argv)
         int retVal = 0;
         if (pid == 0)// child process
         {
-            retVal = execl("./dataserver","./dataserver", NULL);
-
-            if(retVal == -1){
-                throw "DataServer Execution failed";
-            }
+            // Data server moved out
         }
         else if (pid > 0) // parent process
         {
     		ThreadManager threadManager(RequestsPerPerson, SizeOfBuffer, NumberOfWorkers);
-            // ThreadManager threadManager(100000, 100, 40);
             threadManager.StartClient();
+            //threadManager.m_controlChannel->send_request("quit");
         }
         else
         {

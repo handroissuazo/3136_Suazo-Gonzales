@@ -9,7 +9,7 @@ class ThreadManager
 
 #include <iostream>
 #include <fstream>
-#include <string>
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <thread>
@@ -18,9 +18,10 @@ class ThreadManager
 #include <algorithm>
 #include <assert.h>
 #include <unistd.h>
-#include "reqchannel.h"
+#include "NetworkRequestChannel.h"
 #include "semaphore.h"
 
+using namespace std;
 class ThreadManager
 {
 	//Declare ThreadManager's data members and helper functions
@@ -32,7 +33,7 @@ class ThreadManager
 
 		void StartClient();
 
-	private:
+	//private:
 		//std::vector<RequestThread> v_requestThreads;
 		std::vector<RequestPackage> v_requestBuffer1Results;
 		std::vector<RequestPackage> v_requestBuffer2Results;
@@ -40,8 +41,8 @@ class ThreadManager
 
 		std::vector<std::thread> v_workerThreads;
 		std::vector<std::thread> v_staticticsThreads;
-		std::vector<RequestChannel> v_workerChannels;
-		RequestChannel* m_controlChannel;
+		std::vector<NetworkRequestChannel> v_workerChannels;
+		NetworkRequestChannel* m_controlChannel;
 
 		Semaphore* v_requestBuffer;
 		Semaphore* v_responseBuffer1;
@@ -53,7 +54,7 @@ class ThreadManager
 		int m_numberOfWorkers;
 
 		void enqueueRequestBuffer(string personRequested);
-		void dequeueRequestBufferEnqueueResponseBuffer(string strRequestChannel);
+		void dequeueRequestBufferEnqueueResponseBuffer(string strPort);
 		void dequeueResponseBuffer1();
 		void dequeueResponseBuffer2();
 		void dequeueResponseBuffer3();

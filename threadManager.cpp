@@ -13,7 +13,7 @@ ThreadManager::ThreadManager(int RequestsPerPerson, int SizeOfBuffer, int Number
 	// printf("This application supports:\n\tRequests Per Person: %d\n\tBuffer Size: %d\n\tTotal Worker Threads: %d\n",m_requestsPerPerson, m_sizeOfBuffer, m_numberOfWorkers);
 
 	// printf("Establishing control channel... ");
-	m_controlChannel = new RequestChannel("control", RequestChannel::CLIENT_SIDE);
+	m_controlChannel = new NetworkRequestChannel("127.0.0.1", 25526);
   // printf("done.\n");
 
 	v_requestBuffer = new Semaphore(m_sizeOfBuffer);
@@ -58,9 +58,9 @@ void ThreadManager::enqueueRequestBuffer(string personRequested)
 	}
 }
 
-void ThreadManager::dequeueRequestBufferEnqueueResponseBuffer(string strRequestChannel)
+void ThreadManager::dequeueRequestBufferEnqueueResponseBuffer(string strPort)
 {
-	RequestChannel dataChan(strRequestChannel, RequestChannel::CLIENT_SIDE);
+	NetworkRequestChannel dataChan("127.0.0.1", stoi(strPort));
 
 	while(!v_requestBuffer->isDone()){
 		RequestPackage newPackage = v_requestBuffer->V();

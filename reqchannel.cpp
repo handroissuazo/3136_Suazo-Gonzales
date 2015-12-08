@@ -101,8 +101,6 @@ void RequestChannel::open_write_pipe(char * _pipe_name) {
 
 void RequestChannel::open_read_pipe(char * _pipe_name) {
 
-  //  cout << "mkfifo read pipe\n" << flush;
-
   if (mkfifo(_pipe_name, 0600) < 0) {
     if (errno != EEXIST) {
       perror("Error creating pipe for writing; exit program");
@@ -110,15 +108,11 @@ void RequestChannel::open_read_pipe(char * _pipe_name) {
     }
   }
 
-  //  cout << "open read pipe\n" << flush;
-
   rfd = open(_pipe_name, O_RDONLY);
   if (rfd < 0) {
     perror("Error opening pipe for reading; exit program");
     exit(1);
   }
-
-  //  cout << "done opening read pipe\n" << flush;
 
 }
 
@@ -139,12 +133,9 @@ RequestChannel::RequestChannel(const string _name, const Side _side) : my_name(_
 }
 
 RequestChannel::~RequestChannel() {
-  // cout << "close requests channel " << my_name << endl;
   close(wfd);
   close(rfd);
   if (my_side == SERVER_SIDE) {
-    // cout << "close IPC mechanisms on server side for channel " << my_name << endl;
-    /* Destruct the underlying IPC mechanisms. */
     if (remove(pipe_name(READ_MODE)) != 0) {
       perror(string("Request Channel (" + my_name + ") : Error deleting pipe for reading").c_str());
     }
@@ -190,15 +181,11 @@ int RequestChannel::cwrite(string _msg) {
     return -1;
   }
 
-  //  cout << "Request Channel (" << my_name << ") writing [" << _msg << "]";
-
   const char * s = _msg.c_str();
 
   if (write(wfd, s, strlen(s)+1) < 0) {
     perror(string("Request Channel (" + my_name + ") : Error writing to pipe!").c_str());
   }
-
-  //  cout << "(" << my_name << ") done writing." << endl;
 }
 
 /*--------------------------------------------------------------------------*/
