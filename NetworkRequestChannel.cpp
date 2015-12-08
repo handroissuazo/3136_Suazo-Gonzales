@@ -64,17 +64,16 @@ NetworkRequestChannel::NetworkRequestChannel(const unsigned short _port_no, void
 
     while(1) {
         if (make_socket(port) == -1){
-            perror("Did not make socket");
+            perror("server: Could not make socket on given port. Trying a new port... ");
             continue;
         }
         if (bind(sockfd, serv->ai_addr, serv->ai_addrlen) == -1) {
             close(sockfd);
-            perror("server: bind");
+            perror("server: Could not bind socket on given port. Trying a new port... ");
             port = "0";
             continue;
         }
         else {
-            printf("Socket made successfully\n");
             break;
         }
     }
@@ -85,7 +84,7 @@ NetworkRequestChannel::NetworkRequestChannel(const unsigned short _port_no, void
         return;
     }
 
-    printf("port is %d\n",ntohs(get_in_port(serv->ai_addr)));
+    printf("The server's port is %d\n",ntohs(get_in_port(serv->ai_addr)));
     portNum = ntohs(get_in_port(serv->ai_addr));
 
     freeaddrinfo(serv); // all done with this structure
@@ -109,7 +108,6 @@ void NetworkRequestChannel::WaitForClientInitConnection(){
             break;
         }
     }
-    printf("New NetworkRequestChannel waiting for connections...\n");
 }
 
 NetworkRequestChannel::~NetworkRequestChannel() {
@@ -143,7 +141,6 @@ string NetworkRequestChannel::cread() {
     else {
         //Something got through!
         recv(new_fd, buf, sizeof(buf), 0);
-        printf("received msg: %s\n", buf);
     }
 
     return buf;

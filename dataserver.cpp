@@ -51,7 +51,8 @@ using namespace std;
 /* VARIABLES */
 /*--------------------------------------------------------------------------*/
 
-static int nthreads = 0;
+int backlogSize = 0;
+int currentUsedPorts = 0;
 
 /*--------------------------------------------------------------------------*/
 /* FORWARDS */
@@ -102,33 +103,29 @@ void process_data(NetworkRequestChannel & _channel, const string &  _request) {
 }
 
 void process_newthread(NetworkRequestChannel & _channel, const string & _request) {
-  int error;
-  nthreads ++;
+    int error;
 
-  // -- Name new data channel
+    if (currentUsedPorts <= backlogSize) {
+        // -- Construct new data channel (pointer to be passed to thread function)
 
-   // cout << "new channel name = " << new_channel_name << endl;
+        NetworkRequestChannel *data_channel = new NetworkRequestChannel(0, NULL);
+        string new_channel_port = data_channel->port();
 
-  // -- Pass new channel name back to client
+        // Send back port
+        _channel.cwrite(new_channel_port);
 
+        // -- Create new thread to handle request channel
+        pthread_t thread_id;
 
+        if (error = pthread_create(&thread_id, NULL, handle_data_requests, data_channel)) {
+            fprintf(stderr, "p_create failed: %s\n", strerror(error));
+        }
 
-  // -- Construct new data channel (pointer to be passed to thread function)
-
-  NetworkRequestChannel * data_channel = new NetworkRequestChannel(0, NULL);
-
-  string new_channel_port = data_channel->port();
-
-  // Send back port
-  _channel.cwrite(new_channel_port);
-
-  // -- Create new thread to handle request channel
-  pthread_t thread_id;
-
-  if (error = pthread_create(& thread_id, NULL, handle_data_requests, data_channel)) {
-    fprintf(stderr, "p_create failed: %s\n", strerror(error));
-  }
-
+        currentUsedPorts++;
+    }
+    else {  // Fail gracefully if no new threads can be created/no new ports can be opened.
+        _channel.cwrite("-1");
+    }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -172,11 +169,36 @@ void handle_process_loop(NetworkRequestChannel & _channel) {
 /*--------------------------------------------------------------------------*/
 /* MAIN FUNCTION */
 /*--------------------------------------------------------------------------*/
+int main(int argc, char **argv)
+{
+    char option;
+    int desiredPortNumber, backlog = 0;
 
-int main(int argc, char * argv[]) {
+    //Specifying the expected options
+    while ((option = getopt(argc, argv, "p:b:")) != -1)
+    {
+        switch (option) {
+            case 'p' :
+                desiredPortNumber = atoi(optarg);
+                break;
+            case 'b' :
+                backlogSize = atoi(optarg);
+                break;
+            case '?':
+                if (optarg == "n" || optarg == "b" || optarg == "w")
+                    fprintf (stderr, "Option -%c requires an argument.\n", optarg);
+                else
+                    fprintf (stderr, "Unknown option character `\\x%x'.\n",  optarg);
+            default:
+                abort ();
+        }
+    }
+
+    if(desiredPortNumber == 0) desiredPortNumber = 25526;
+    if(backlogSize == 0) backlogSize = 100;
 
    // cout << "Establishing control channel... " << flush;
-    NetworkRequestChannel control_channel(25526, NULL);
+    NetworkRequestChannel control_channel(desiredPortNumber, NULL);
    // cout << "done.\n" << flush;
     control_channel.WaitForClientInitConnection();
 

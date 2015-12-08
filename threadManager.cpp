@@ -1,11 +1,13 @@
 #include "threadManager.h"
 
-ThreadManager::ThreadManager(int RequestsPerPerson, int SizeOfBuffer, int NumberOfWorkers)
+ThreadManager::ThreadManager(int RequestsPerPerson, int SizeOfBuffer, int NumberOfWorkers, string ServerName, int ServerPort)
 {
 
 	m_requestsPerPerson = RequestsPerPerson;
 	m_sizeOfBuffer = SizeOfBuffer;
 	m_numberOfWorkers = NumberOfWorkers;
+	m_serverName = ServerName;
+	m_serverControlPort = ServerPort;
 
 	finish1 = false;
 	finish2 = false;
@@ -13,7 +15,7 @@ ThreadManager::ThreadManager(int RequestsPerPerson, int SizeOfBuffer, int Number
 	// printf("This application supports:\n\tRequests Per Person: %d\n\tBuffer Size: %d\n\tTotal Worker Threads: %d\n",m_requestsPerPerson, m_sizeOfBuffer, m_numberOfWorkers);
 
 	// printf("Establishing control channel... ");
-	m_controlChannel = new NetworkRequestChannel("127.0.0.1", 25526);
+	m_controlChannel = new NetworkRequestChannel(m_serverName, ServerPort);
   // printf("done.\n");
 
 	v_requestBuffer = new Semaphore(m_sizeOfBuffer);
@@ -60,7 +62,7 @@ void ThreadManager::enqueueRequestBuffer(string personRequested)
 
 void ThreadManager::dequeueRequestBufferEnqueueResponseBuffer(string strPort)
 {
-	NetworkRequestChannel dataChan("127.0.0.1", stoi(strPort));
+	NetworkRequestChannel dataChan(m_serverName, stoi(strPort));
 
 	while(!v_requestBuffer->isDone()){
 		RequestPackage newPackage = v_requestBuffer->V();
@@ -147,9 +149,12 @@ void ThreadManager::initRequestThreads(){
 void ThreadManager::initWorkerThreads(){
 	for (int i = 0; i < m_numberOfWorkers; ++i){
 		string strServerThreadRequest = m_controlChannel->send_request("newthread");
-		// cout << "Reply to request 'newthread' is " << strServerThreadRequest << "'" << endl;
 
-		v_workerThreads.push_back(std::thread(&ThreadManager::dequeueRequestBufferEnqueueResponseBuffer, this, strServerThreadRequest));
+		if(strServerThreadRequest != "-1") {
+			v_workerThreads.push_back(std::thread(&ThreadManager::dequeueRequestBufferEnqueueResponseBuffer, this, strServerThreadRequest));
+		}
+		else	//No new workers can be created as all of the ports are used up.
+			break;
 	}
 }
 

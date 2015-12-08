@@ -28,7 +28,7 @@ class ThreadManager
 	public:
 		//The constructor innitializes the control RequestChannel and whatever
 		//other things that need to get done in the beginning
-		ThreadManager(int req, int buf, int wok);
+		ThreadManager(int req, int buf, int wok, string ServerName, int ServerPort);
 		~ThreadManager();
 
 		void StartClient();
@@ -52,6 +52,8 @@ class ThreadManager
 		int m_requestsPerPerson;
 		int m_sizeOfBuffer;
 		int m_numberOfWorkers;
+		string m_serverName;
+		int m_serverControlPort;
 
 		void enqueueRequestBuffer(string personRequested);
 		void dequeueRequestBufferEnqueueResponseBuffer(string strPort);
