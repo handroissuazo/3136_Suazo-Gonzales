@@ -20,8 +20,9 @@ class NetworkRequestChannel {
 
 public:
     typedef enum {SERVER_SIDE, CLIENT_SIDE} Side;
-
+    typedef enum {CONTROL_CHANNEL, THREAD_CHANNEL} ReqChannelType;
     Side my_side;
+    ReqChannelType my_type;
 
     struct addrinfo hints, *res, *serv; // hints is for both: res is for the client: serv is for the server
     struct sockaddr_storage their_addr; // this is for the server
@@ -32,7 +33,7 @@ public:
     NetworkRequestChannel(const std::string server_host_name, const unsigned short _port_no);
 
     //Server side request channel constructor (the second argument is the)
-    NetworkRequestChannel(const unsigned short _port_no, void * (*connectionHandler) (int *));
+    NetworkRequestChannel(const unsigned short _port_no, void * (*connectionHandler) (int *), ReqChannelType givenType);
 
     ~NetworkRequestChannel();
 

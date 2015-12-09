@@ -1,7 +1,6 @@
 #include "threadManager.h"
 
-ThreadManager::ThreadManager(int RequestsPerPerson, int SizeOfBuffer, int NumberOfWorkers, string ServerName, int ServerPort)
-{
+ThreadManager::ThreadManager(int RequestsPerPerson, int SizeOfBuffer, int NumberOfWorkers, string ServerName, int ServerPort) {
 
 	m_requestsPerPerson = RequestsPerPerson;
 	m_sizeOfBuffer = SizeOfBuffer;
@@ -12,10 +11,24 @@ ThreadManager::ThreadManager(int RequestsPerPerson, int SizeOfBuffer, int Number
 	finish1 = false;
 	finish2 = false;
 	finish3 = false;
-	// printf("This application supports:\n\tRequests Per Person: %d\n\tBuffer Size: %d\n\tTotal Worker Threads: %d\n",m_requestsPerPerson, m_sizeOfBuffer, m_numberOfWorkers);
+
+	NetworkRequestChannel *initComm = new NetworkRequestChannel(m_serverName, ServerPort);
+	string strServerThreadRequest = initComm->send_request("newthread");
+	string quitResp = initComm->send_request("quit");
+	if (quitResp == "bye") delete initComm;
+
+	if (strServerThreadRequest != "-1") {
+		m_controlChannel = new NetworkRequestChannel(m_serverName, stoi(strServerThreadRequest));
+	}
+	else {	//No new workers can be created as all of the ports are used up.
+		perror("No new client communication can be established due to full ports on the data server");
+		return;
+	}
+
 
 	// printf("Establishing control channel... ");
-	m_controlChannel = new NetworkRequestChannel(m_serverName, ServerPort);
+
+
   // printf("done.\n");
 
 	v_requestBuffer = new Semaphore(m_sizeOfBuffer);

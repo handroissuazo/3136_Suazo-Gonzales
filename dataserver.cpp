@@ -102,13 +102,13 @@ void process_data(NetworkRequestChannel & _channel, const string &  _request) {
   _channel.cwrite(int2string(rand() % 100));
 }
 
-void process_newthread(NetworkRequestChannel & _channel, const string & _request) {
+void process_newthread(NetworkRequestChannel & _channel, const string & _request, NetworkRequestChannel::ReqChannelType channelType) {
     int error;
 
     if (currentUsedPorts < backlogSize) {
         // -- Construct new data channel (pointer to be passed to thread function)
 
-        NetworkRequestChannel *data_channel = new NetworkRequestChannel(0, NULL);
+        NetworkRequestChannel *data_channel = new NetworkRequestChannel(0, NULL, channelType);
         string new_channel_port = data_channel->port();
 
         // Send back port
@@ -141,7 +141,7 @@ void process_request(NetworkRequestChannel & _channel, const string & _request) 
     process_data(_channel, _request);
   }
   else if (_request.compare(0, 9, "newthread") == 0) {
-    process_newthread(_channel, _request);
+    process_newthread(_channel, _request, NetworkRequestChannel::THREAD_CHANNEL);
   }
   else {
     _channel.cwrite("unknown request");
@@ -158,14 +158,35 @@ void handle_process_loop(NetworkRequestChannel & _channel) {
     if (request.compare("quit") == 0) {
       _channel.cwrite("bye");
       usleep(10000);          // give the other end a bit of time.
-      break;                  // break out of the loop;
+        if(_channel.my_type == NetworkRequestChannel::THREAD_CHANNEL) {
+            --currentUsedPorts;
+            break;                  // break out of the loop;
+        }
     }
 
     process_request(_channel, request);
   }
-
 }
 
+void handle_control_loop(NetworkRequestChannel & _channel){
+
+    while(true) {
+        _channel.WaitForClientInitConnection();
+
+        for (; ;) {
+
+            string request = _channel.cread();
+
+            if (request.compare("quit") == 0) {
+                _channel.cwrite("bye");
+                usleep(10000);          // give the other end a bit of time.
+                break;                  // break out of the loop;
+            }
+
+            process_request(_channel, request);
+        }
+    }
+}
 /*--------------------------------------------------------------------------*/
 /* MAIN FUNCTION */
 /*--------------------------------------------------------------------------*/
@@ -198,10 +219,9 @@ int main(int argc, char **argv)
     if(backlogSize == 0) backlogSize = 100;
 
    // cout << "Establishing control channel... " << flush;
-    NetworkRequestChannel control_channel(desiredPortNumber, NULL);
+    NetworkRequestChannel control_channel(desiredPortNumber, NULL, NetworkRequestChannel::CONTROL_CHANNEL);
    // cout << "done.\n" << flush;
-    control_channel.WaitForClientInitConnection();
 
-    handle_process_loop(control_channel);
+    handle_control_loop(control_channel);
 
 }

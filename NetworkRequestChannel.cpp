@@ -48,10 +48,11 @@ NetworkRequestChannel::NetworkRequestChannel(const std::string server_host_name,
 }
 
 // Server side constructor
-NetworkRequestChannel::NetworkRequestChannel(const unsigned short _port_no, void * (*connectionHandler) (int *)){
+NetworkRequestChannel::NetworkRequestChannel(const unsigned short _port_no, void * (*connectionHandler) (int *), ReqChannelType givenType){
       // listen on sock_fd, new connection on new_fd
 
     my_side = SERVER_SIDE;
+    my_type = givenType;
 //    char s[INET6_ADDRSTRLEN];
 
 
